@@ -38,6 +38,7 @@ boolean flag = true, flag2 = true, initiate = false;
 void notify()
 {
   //--------------- Base Driving Events --------------
+  //Base-Left
   if ( Ps3.event.button_down.up && initiate) {
     status = 1;
 #ifdef DEBUG
@@ -48,7 +49,10 @@ void notify()
 #ifdef DEBUG
     Serial << "Brake" << endl;
 #endif
-  } if ( Ps3.event.button_down.down && initiate) {
+  } 
+
+  //Base-Down
+  if ( Ps3.event.button_down.down && initiate) {
     status = 2;
 #ifdef DEBUG
     Serial << "Down" << endl;
@@ -58,7 +62,10 @@ void notify()
 #ifdef DEBUG
     Serial << "Brake" << endl;
 #endif
-  } if ( Ps3.event.button_down.left && initiate) {
+  } 
+  
+  //Base-Left
+  if ( Ps3.event.button_down.left && initiate) {
     status = 3;
 #ifdef DEBUG
     Serial << "Left" << endl;
@@ -68,7 +75,10 @@ void notify()
 #ifdef DEBUG
     Serial << "Brake" << endl;
 #endif
-  } if ( Ps3.event.button_down.right && initiate) {
+  } 
+
+  //Base-Right
+  if ( Ps3.event.button_down.right && initiate) {
     status = 4;
 #ifdef DEBUG
     Serial << "Right" << endl;
@@ -78,105 +88,123 @@ void notify()
 #ifdef DEBUG
     Serial << "brake." << endl;
 #endif
-  } if ( Ps3.event.button_down.l1 && initiate) {
+  }
+
+  //Turret Anti-Clockwise
+  if ( Ps3.data.button.l1 && initiate) {
     //        status = 6;
     Serial2.write(6);
 #ifdef DEBUG
     Serial << "Turret Anti-Clockwise.." << endl;
 #endif
-  } if ( Ps3.event.button_up.l1 && initiate) {
-    status = 5;
-    Serial2.write(8);
-#ifdef DEBUG
-    Serial << "Turret Rotation Brake..." << endl;
-#endif
-  } if ( Ps3.event.button_down.r1 && initiate) {
+  }
+
+  //Turret Clockwise
+  if ( Ps3.data.button.r1 && initiate) {
     //    status = 7;
     Serial2.write(7);
 #ifdef DEBUG
     Serial << "Turret Clockwise..." << endl;
 #endif
-  } if ( Ps3.event.button_up.r1 && initiate) {
-    status = 5;
-    Serial2.write(8);
-#ifdef DEBUG
-    Serial << "Turret Rotation Brake..." << endl;
-#endif
-  } if ( Ps3.data.button.up && Ps3.data.button.left && initiate) {
+  }
+
+  //Forward-Left
+  if ( Ps3.data.button.up && Ps3.data.button.left && initiate) {
     //    status = 8;
 #ifdef DEBUG
     Serial << "Forward-Left" << endl;
 #endif
-  } if ( Ps3.data.button.up && Ps3.data.button.right && initiate) {
+  }
+
+  //Forward-Right
+  if ( Ps3.data.button.up && Ps3.data.button.right && initiate) {
     //    status = 9;
 #ifdef DEBUG
     Serial << "Forward-Right" << endl;
 #endif
-  } if ( Ps3.data.button.down && Ps3.data.button.right && initiate) {
+  }
+
+  //Reverse-Right
+  if ( Ps3.data.button.down && Ps3.data.button.right && initiate) {
     //    status = 10;
 #ifdef DEBUG
     Serial << "Reverse-Right" << endl;
 #endif
-  } if ( Ps3.data.button.down && Ps3.data.button.left && initiate) {
+  }
+
+  //Reverse-Left
+  if ( Ps3.data.button.down && Ps3.data.button.left && initiate) {
     //    status = 11;
 #ifdef DEBUG
     Serial << "Reverse-Left" << endl;
 #endif
-  } if ( Ps3.event.button_down.square && initiate) {
+  }
+
+  //Hercules Control
+  if ( Ps3.event.button_down.square && initiate) {
     //    status = 12;
 #ifdef DEBUG
     Serial << "Hercules Control..." << endl;
 #endif
     Serial2.write(2);
-  } if ( Ps3.event.button_down.l3 && initiate) {
+  }
+
+  //CIM speed Increment
+  if ( Ps3.event.button_down.l3 && initiate) {
     status = 5;
 #ifdef DEBUG
     Serial << "CIM Incre..." << endl;
 #endif
     Serial2.write(11);
-  } if ( Ps3.event.button_down.r3 && initiate) {
+  }
+
+  //CIM speed decrement
+  if ( Ps3.event.button_down.r3 && initiate) {
     status = 5;
 #ifdef DEBUG
     Serial << "CIM Decre.." << endl;
 #endif
     Serial2.write(12);
-  } if ( Ps3.event.button_down.triangle && initiate) {
+  }
+
+  //Turret Up
+  if ( Ps3.data.button.triangle && initiate) {
     status = 5;
 #ifdef DEBUG
     Serial << "Turret Up..." << endl;
 #endif
     Serial2.write(4);
-  } if ( Ps3.event.button_up.triangle && initiate) {
-    status = 5;
-#ifdef DEBUG
-    Serial << "Turret Lock..." << endl;
-#endif
-    Serial2.write(9);
-  } if ( Ps3.event.button_down.circle && initiate)  {
+  }
+
+  //Starting CIM
+  if ( Ps3.event.button_down.circle && initiate)  {
     status = 5;
 #ifdef DEBUG
     Serial << "CIM Started..." << endl;
 #endif
     Serial2.write(3);
-  } if ( Ps3.event.button_down.cross && initiate) {
+  }
+
+  // Turret Down with angle
+  if ( Ps3.data.button.cross && initiate) {
     status = 5;
 #ifdef DEBUG
     Serial << "Turret Down..." << endl;
 #endif
     Serial2.write(5);
-  } if ( Ps3.event.button_up.cross && initiate) {
-    status = 5;
-#ifdef DEBUG
-    Serial << "Turret Lock.." << endl;
-#endif
-    Serial2.write(9);
-  } if ( Ps3.event.button_down.ps && !initiate) {
+  }
+
+  // For Using PS
+  if ( Ps3.event.button_down.ps && !initiate) {
     initiate = true;
     status = 5;
 #ifdef DEBUG
     Serial << "Initiate..." << endl;
 #endif
-  } if (Ps3.event.button_down.select && initiate) {
+  }
+
+  //Loading Ball
+  if (Ps3.event.button_down.select && initiate) {
     status = 5;
 #ifdef DEBUG
     Serial << "Loading Ball..." << endl;
@@ -185,7 +213,7 @@ void notify()
   }
 }
 
-void onConnect() {
+void onConnect()  {
   Serial.println("Connected.");
 }
 
@@ -196,7 +224,6 @@ void slowStart() {
   }
   if (i == speeeeed)
     flag = false;
-
 }
 
 void forward() {
@@ -414,9 +441,11 @@ void setup() {
 void loop() {
   if (!Ps3.isConnected()) {
     Serial2.write(10);
+    Serial << "In if:" << Ps3.isConnected() << endl;
     base.brake();
     return;
   }
+  Serial << "Out of if:" << Ps3.isConnected() << endl;
 
   if (status == 1) {
     if (flag2 == true)

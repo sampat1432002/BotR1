@@ -10,6 +10,8 @@
 #define address 0x80
 #define DEBUG
 #define endl "\n"
+#define responsM2 23
+#define responsM1 25
 
 template<class T> inline Print& operator<<(Print& serial, T args) {
   serial.print(args);
@@ -22,17 +24,22 @@ Servo myservo;
 RoboClaw roboclaw(&Serial1, 10000);
 
 byte speed = 90;
-byte ball = 0;
+byte ball = 3;
 byte dataFromESP;
-float angle = 0, pos = 0;
+float angleM2 = 0, angleM1 = 0, posM2 = 0, posM1 = 0;
 boolean status_Hercules = false, status_CIM = false;
 
 void servo_rotate() {
-  ball++;
-  if (90 * ball < 265)
-    myservo.write(90 * ball);
-  else
-    myservo.write(255);
+  ball--;
+  if (ball >= 0) {
+    for (int i = 60 * (ball + 1); i <= 60 * ball; i -= 5)
+    {
+      myservo.write(i);
+      delay(30);
+    }
+  } else
+    myservo.write(180);
+  ball = 3;
 }
 
 void destroyer() {
@@ -52,28 +59,27 @@ float mapf(float x, float in_min, float in_max, float out_min, float out_max)
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-//void setEncoderM1(float angle) {
-//  pos = map(angle, 41, 75, 0, -500);
-//  Serial.println(pos);
-//  if (pos > -500)
-//    roboclaw.SpeedAccelDeccelPositionM1(address, 0, 65000, 0, pos, 1);
-//}
+//Setting encoder position according to angle for M1
+void setEncoderM1(float angleM1) {
+  posM1 = mapf(angleM1, 0, 90, 0, -14400);
+  if (posM1 > -14400)
+    roboclaw.SpeedAccelDeccelPositionM1(address, 0, 65000, 0, posM1, 1);
+}
+
+//Setting encoder position according to angle for M2
+void setEncoderM2(float angleM2) {
+  posM2 = mapf(angleM2, 0, 35, 0, 500);
+  if (posM2 < 500)
+    roboclaw.SpeedAccelDeccelPositionM2(address, 0, 65000, 0, posM2, 1);
+}
 
 void homing() { // Turret Moving to home position
-  //  roboclaw.SetPinFunctions(address, 0, 4, 0);
-  //  roboclaw.WriteNVM(address);
+  roboclaw.BackwardM2(address, 32);
   roboclaw.ForwardM1(address, 64);
-  delay(1500);
+  delay(3000);
   roboclaw.SetEncM1(address, 0);
-  //  roboclaw.SetPinFunctions(address, 0, 0, 0);
-  //  roboclaw.WriteNVM(address);
-  //  roboclaw.BackwardM1(address, 64);
-  //  delay(200);
-  //  roboclaw.BackwardM1(address, 0);
-  //  delay(100);
-  //  roboclaw.SetPinFunctions(address, 0, 2, 0);
-  //  roboclaw.WriteNVM(address);
-  //  delay(500);
+  roboclaw.SetEncM2(address, 0);
+  roboclaw.SpeedAccelDeccelPositionM1(address, 3000, 65000, 3000, -7200, 1);
 }
 
 void setup() {
@@ -82,16 +88,13 @@ void setup() {
   Serial3.begin(115200);
   roboclaw.begin(115200);
   homing();
-  //  roboclaw.SpeedAccelDeccelPositionM1(address, 3000, 65000, 3000, -500, 1);
   pinMode(DIR, OUTPUT);
   pinMode(CIMPWM, OUTPUT);
   myservo.attach(6);
-  myservo.write(0);
+  myservo.write(180);
 }
 
 void loop() {
-  // put your main code h
-ere, to run repeatedly:
   if (Serial3.available() > -1) {
     dataFromESP = Serial3.read();
     Serial.println(dataFromESP);
@@ -131,43 +134,44 @@ ere, to run repeatedly:
           status_CIM = false;
         } break;
       case 4:
-        roboclaw.BackwardM1(address, 127);
-        //        angle = angle < 75 ? angle + 0.3 : 75;
-        //        setEncoderM1(angle);
+        //        roboclaw.BackwardM1(address, 64);
+        angleM2 = angleM2 < 36 ? angleM2 + 0.3 : 35;
+        setEncoderM2(angleM2);
 #ifdef DEBUG
         Serial << "Turret Up" << endl;
 #endif
         break; // turret up
       case 5:
-        roboclaw.ForwardM1(address, 127);
-        // angle = angle > 40 ? angle - 0.3 : 41;
-        // setEncoderM1(angle);
+        angleM2 = angleM2 >= -1 ? angleM2 - 0.3 : 0;
+        setEncoderM2(angleM2);
 #ifdef DEBUG
         Serial << "Turret Down" << endl;
 #endif
         break; // turret down
       case 6:
-        roboclaw.BackwardM2(address, 127);
+        angleM1 = angleM1 >= -1 ? angleM1 - 0.3 : 0;
+        setEncoderM1(angleM1);
 #ifdef DEBUG
         Serial << "Turret Rotation Movement Anti - Clockwise.." << endl;
 #endif
         break;
       case 7:
-        roboclaw.ForwardM2(address, 127);
+        angleM1 = angleM1 < 91 ? angleM1 + 0.3 : 90;
+        setEncoderM1(angleM1);
 #ifdef DEBUG
         Serial << "Turret Rotation Movement Clockwise.." << endl;
 #endif
         break;
       case 8:
-        roboclaw.BackwardM2(address, 0);
+        roboclaw.BackwardM1(address, 0);
 #ifdef DEBUG
         Serial << "Turret Rotation Movement brake.." << endl;
 #endif
         break;
       case 9:
-        roboclaw.BackwardM1(address, 0);
+        //        roboclaw.BackwardM2(address, 0);
 #ifdef DEBUG
-        Serial << "Turret Angle Movement Lock.." << endl;
+        Serial << "Turret angleM2 Movement Lock.." << endl;
 #endif
         break;
       case 11:
@@ -189,6 +193,7 @@ ere, to run repeatedly:
         roboclaw.BackwardM1(address, 0);
         roboclaw.BackwardM2(address, 0);
         analogWrite(CIMPWM, 0);
+        myservo.write(180);
 #ifdef DEBUG
         Serial << "PS3 Disconnected.." << endl;
 #endif
