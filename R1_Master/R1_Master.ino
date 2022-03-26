@@ -49,7 +49,7 @@ void notify()
 #ifdef DEBUG
     Serial << "Brake" << endl;
 #endif
-  } 
+  }
 
   //Base-Down
   if ( Ps3.event.button_down.down && initiate) {
@@ -62,8 +62,8 @@ void notify()
 #ifdef DEBUG
     Serial << "Brake" << endl;
 #endif
-  } 
-  
+  }
+
   //Base-Left
   if ( Ps3.event.button_down.left && initiate) {
     status = 3;
@@ -75,7 +75,7 @@ void notify()
 #ifdef DEBUG
     Serial << "Brake" << endl;
 #endif
-  } 
+  }
 
   //Base-Right
   if ( Ps3.event.button_down.right && initiate) {
@@ -91,18 +91,33 @@ void notify()
   }
 
   //Turret Anti-Clockwise
-  if ( Ps3.data.button.l1 && initiate) {
+  if ( Ps3.event.button_down.l1 && initiate) {
     //        status = 6;
     Serial2.write(6);
 #ifdef DEBUG
     Serial << "Turret Anti-Clockwise.." << endl;
 #endif
   }
+  
+  if ( Ps3.event.button_up.l1 && initiate) {
+    //        status = 6;
+    Serial2.write(8);
+#ifdef DEBUG
+    Serial << "Turret Anti-Clockwise.." << endl;
+#endif
+  }
 
   //Turret Clockwise
-  if ( Ps3.data.button.r1 && initiate) {
+  if ( Ps3.event.button_down.r1 && initiate) {
     //    status = 7;
     Serial2.write(7);
+#ifdef DEBUG
+    Serial << "Turret Clockwise..." << endl;
+#endif
+  }
+  if ( Ps3.event.button_up.r1 && initiate) {
+    //    status = 7;
+    Serial2.write(8);
 #ifdef DEBUG
     Serial << "Turret Clockwise..." << endl;
 #endif
@@ -193,7 +208,7 @@ void notify()
 #endif
     Serial2.write(5);
   }
-
+  
   // For Using PS
   if ( Ps3.event.button_down.ps && !initiate) {
     initiate = true;

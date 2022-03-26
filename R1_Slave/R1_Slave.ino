@@ -10,8 +10,9 @@
 #define address 0x80
 #define DEBUG
 #define endl "\n"
-#define responsM2 23
-#define responsM1 25
+#define responsM1 25 // Pressed HIGH
+#define responsM2 23 // Pressed HIGH
+
 
 template<class T> inline Print& operator<<(Print& serial, T args) {
   serial.print(args);
@@ -24,22 +25,19 @@ Servo myservo;
 RoboClaw roboclaw(&Serial1, 10000);
 
 byte speed = 90;
-byte ball = 3;
+byte servo_angle = 180;
 byte dataFromESP;
 float angleM2 = 0, angleM1 = 0, posM2 = 0, posM1 = 0;
 boolean status_Hercules = false, status_CIM = false;
 
 void servo_rotate() {
-  ball--;
-  if (ball >= 0) {
-    for (int i = 60 * (ball + 1); i <= 60 * ball; i -= 5)
-    {
-      myservo.write(i);
-      delay(30);
-    }
-  } else
+  servo_angle -= 20;
+  if (servo_angle >= 0)
+    myservo.write(servo_angle);
+  else {
     myservo.write(180);
-  ball = 3;
+    servo_angle = 180;
+  }
 }
 
 void destroyer() {
@@ -61,8 +59,11 @@ float mapf(float x, float in_min, float in_max, float out_min, float out_max)
 
 //Setting encoder position according to angle for M1
 void setEncoderM1(float angleM1) {
-  posM1 = mapf(angleM1, 0, 90, 0, -14400);
-  if (posM1 > -14400)
+  if (91 > angleM1 > 44)
+    posM1 = mapf(angleM1, 45, 90, 0, 7200);
+  else if ( 45 > angleM1 > 0)
+    posM1 = mapf(angleM1, 0, 45, 0, -7200);
+  if (-7200 < posM1 < 7200)
     roboclaw.SpeedAccelDeccelPositionM1(address, 0, 65000, 0, posM1, 1);
 }
 
@@ -75,11 +76,13 @@ void setEncoderM2(float angleM2) {
 
 void homing() { // Turret Moving to home position
   roboclaw.BackwardM2(address, 32);
-  roboclaw.ForwardM1(address, 64);
+  //  if (!digitalRead(responsM1)) // If responseM1 pressed
+  //  roboclaw.ForwardM1(address, 64);
   delay(3000);
-  roboclaw.SetEncM1(address, 0);
+  //  while (digitalRead(responsM1) == HIGH && digitalRead(responsM2) == HIGH);
+  //  roboclaw.SetEncM1(address, 0);
   roboclaw.SetEncM2(address, 0);
-  roboclaw.SpeedAccelDeccelPositionM1(address, 3000, 65000, 3000, -7200, 1);
+  //  roboclaw.SpeedAccelDeccelPositionM1(address, 3000, 65000, 3000, -7200, 1);
 }
 
 void setup() {
@@ -149,15 +152,17 @@ void loop() {
 #endif
         break; // turret down
       case 6:
-        angleM1 = angleM1 >= -1 ? angleM1 - 0.3 : 0;
-        setEncoderM1(angleM1);
+//        angleM1 = angleM1 >= -1 ? angleM1 - 3 : 0;
+//        setEncoderM1(angleM1);
+        roboclaw.ForwardM1(address, 127);
 #ifdef DEBUG
         Serial << "Turret Rotation Movement Anti - Clockwise.." << endl;
 #endif
         break;
       case 7:
-        angleM1 = angleM1 < 91 ? angleM1 + 0.3 : 90;
-        setEncoderM1(angleM1);
+        //        angleM1 = angleM1 < 91 ? angleM1 + 3 : 90;
+        //        setEncoderM1(angleM1);
+        roboclaw.BackwardM1(address, 127);
 #ifdef DEBUG
         Serial << "Turret Rotation Movement Clockwise.." << endl;
 #endif
